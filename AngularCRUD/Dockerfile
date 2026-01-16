@@ -1,13 +1,20 @@
-FROM node:16.14.0-alpine as build
+# -------- BUILD STAGE --------
+FROM node:16-alpine AS build
+
 WORKDIR /app
-COPY / ./
+
 COPY package*.json ./
+RUN npm install
 
-RUN npm install -g @angular/cli && \
-    npm install && \
-    npm run build
 COPY . .
+RUN npm run build
 
+# -------- NGINX STAGE --------
 FROM nginx:alpine
-WORKDIR /app
+
 COPY --from=build /app/dist/angular-crud /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
